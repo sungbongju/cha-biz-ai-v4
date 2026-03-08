@@ -1627,7 +1627,9 @@ function initSpeechRecognition() {
   };
 
   recognition.onerror = function(event) {
+    console.warn('[Voice] 음성인식 에러:', event.error);
     if (event.error === 'not-allowed') {
+      console.error('[Voice] 마이크 권한 거부됨');
       autoListenEnabled = false;
     } else if (event.error === 'no-speech') {
       if (autoListenEnabled && sessionInfo && !isSpeaking && !isProcessing) {
@@ -1649,15 +1651,16 @@ function initSpeechRecognition() {
 
 function startListening() {
   if (!recognition || isListening || !sessionInfo) return;
-  try { recognition.start(); } catch (e) {}
+  console.log('[Voice] startListening 호출 (isSpeaking=' + isSpeaking + ', isProcessing=' + isProcessing + ')');
+  try { recognition.start(); } catch (e) { console.warn('[Voice] recognition.start 실패:', e.message); }
 }
 
 // 발화 완료 공통 처리
 function onSpeakingDone(source) {
-  if (!isSpeaking) return;
+  if (!isSpeaking) { console.log('[Avatar] onSpeakingDone 무시 — isSpeaking=false (' + source + ')'); return; }
   isSpeaking = false;
   isProcessing = false;
-  console.log('[Avatar] 발화 완료 감지 (' + source + ')');
+  console.log('[Avatar] 발화 완료 감지 (' + source + ') → autoListen=' + autoListenEnabled + ', session=' + !!sessionInfo);
   if (autoListenEnabled && sessionInfo) {
     setVoiceState('listening');
     startListening();
