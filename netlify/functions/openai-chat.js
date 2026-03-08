@@ -243,6 +243,97 @@ ${SECTION_LIST_FOR_PROMPT}
 // ============================================
 // TTS 후처리 함수
 // ============================================
+
+// 채팅 버블용: GPT 발음 텍스트를 자연스러운 표시용 텍스트로 역변환
+function cleanForDisplay(text) {
+  return text
+    // 한글 발음 → 영어 약어 복원
+    .replace(/에이아이/g, 'AI')
+    .replace(/이에스지/g, 'ESG')
+    .replace(/알앤디/g, 'R&D')
+    .replace(/아이티/g, 'IT')
+    .replace(/아이알/g, 'IR')
+    .replace(/피알/g, 'PR')
+    .replace(/씨알엠/g, 'CRM')
+    .replace(/씨알/g, 'CR')
+    .replace(/씨디오/g, 'CDO')
+    .replace(/브이씨/g, 'VC')
+    .replace(/씨피에이/g, 'CPA')
+    .replace(/케이피엠지/g, 'KPMG')
+    .replace(/키스트/g, 'KIST')
+    .replace(/케이티/g, 'KT')
+    .replace(/엔와이유/g, 'NYU')
+    .replace(/유엔디피/g, 'UNDP')
+    .replace(/에이디에스피/g, 'ADsP')
+    .replace(/에스큐엘디/g, 'SQLD')
+    .replace(/라이즈/g, 'RISE')
+    .replace(/엔지오/g, 'NGO')
+    // 불필요한 띄어쓰기 복원 (TTS용 분리 → 원래 표기)
+    .replace(/차 의과학 대학교/g, '차의과학대학교')
+    .replace(/차 의과학대/g, '차의과학대')
+    .replace(/차 병원 그룹/g, '차병원그룹')
+    .replace(/차 병원/g, '차병원')
+    .replace(/헬스케어 융합 학부/g, '헬스케어융합학부')
+    .replace(/미래 융합 대학/g, '미래융합대학')
+    .replace(/경영학 전공/g, '경영학전공')
+    .replace(/융합 과학 대학/g, '융합과학대학')
+    .replace(/글로벌 미래 교육원/g, '글로벌미래교육원')
+    .replace(/데이터 경영 학과/g, '데이터경영학과')
+    .replace(/빅데이터 인공지능 연구소/g, '빅데이터인공지능연구소')
+    .replace(/경영 대학원/g, '경영대학원')
+    .replace(/입학 홍보처/g, '입학홍보처')
+    .replace(/경영 컨설턴트/g, '경영컨설턴트')
+    // 기관/단체명
+    .replace(/한국 경영 학회/g, '한국경영학회')
+    .replace(/한국 경영 교육 학회/g, '한국경영교육학회')
+    .replace(/한국 회계 정책 학회/g, '한국회계정책학회')
+    .replace(/한국 정부 회계 학회/g, '한국정부회계학회')
+    .replace(/한국 고객 만족 경영 학회/g, '한국고객만족경영학회')
+    .replace(/한국 국제 경영 관리 학회/g, '한국국제경영관리학회')
+    .replace(/한국 물류 학회/g, '한국물류학회')
+    .replace(/한국 지능 정보 사회 진흥원/g, '한국지능정보사회진흥원')
+    .replace(/대한 상공 회의소/g, '대한상공회의소')
+    .replace(/기획 재정부/g, '기획재정부')
+    .replace(/금융 감독원/g, '금융감독원')
+    .replace(/공인 회계사/g, '공인회계사')
+    .replace(/과학 기술 협력 센터/g, '과학기술협력센터')
+    .replace(/디지털 혁신국/g, '디지털혁신국')
+    .replace(/연구 정책 실장/g, '연구정책실장')
+    // 과목/분야명 복원
+    .replace(/기술 경영/g, '기술경영')
+    .replace(/기술 경제/g, '기술경제')
+    .replace(/국제 경영/g, '국제경영')
+    .replace(/국제 경제/g, '국제경제')
+    .replace(/연구 윤리/g, '연구윤리')
+    .replace(/인사 조직/g, '인사조직')
+    .replace(/경영 전략/g, '경영전략')
+    .replace(/관광 심리/g, '관광심리')
+    .replace(/의료 관광/g, '의료관광')
+    .replace(/소비자 심리/g, '소비자심리')
+    .replace(/재무 금융/g, '재무금융')
+    .replace(/회계 재무/g, '회계재무')
+    .replace(/조직 행동론/g, '조직행동론')
+    .replace(/경영학 원론/g, '경영학원론')
+    .replace(/재무 관리/g, '재무관리')
+    .replace(/마케팅 원론/g, '마케팅원론')
+    .replace(/경영 전략론/g, '경영전략론')
+    .replace(/서비스 마케팅/g, '서비스마케팅')
+    .replace(/금융 시장론/g, '금융시장론')
+    .replace(/기업 지배 구조/g, '기업지배구조')
+    .replace(/투자 자산 운용/g, '투자자산운용')
+    .replace(/캡스톤 디자인/g, '캡스톤디자인')
+    .replace(/비즈니스 애널리틱스/g, '비즈니스애널리틱스')
+    .replace(/헬스케어 비즈니스/g, '헬스케어비즈니스')
+    .replace(/헬스케어 파이낸스/g, '헬스케어파이낸스')
+    .replace(/혁신 관리/g, '혁신관리')
+    .replace(/미래 예측/g, '미래예측')
+    // 퍼센트 → % 복원
+    .replace(/(\d+)\s*퍼센트/g, '$1%')
+    // 불필요한 연속 공백 정리
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 function applyTtsPostProcessing(text) {
   let result = text
     // 학교/학부/학과명
@@ -395,7 +486,7 @@ export default async (req) => {
     if (type === "tab_explain") {
       const script = SECTION_SCRIPTS[tabId];
       if (script) {
-        return new Response(JSON.stringify({ reply: script, ttsReply: script, action: "none", tabId: null }), {
+        return new Response(JSON.stringify({ reply: cleanForDisplay(script), ttsReply: script, action: "none", tabId: null }), {
           status: 200, headers: corsHeaders(),
         });
       }
@@ -468,11 +559,13 @@ export default async (req) => {
       }
     }
 
-    // ── TTS 후처리 (채팅용 reply 원본, ttsReply 발음 최적화) ──
+    // ── 채팅 버블용: 발음 텍스트 → 자연스러운 표시용 텍스트 ──
+    const displayReply = parsedReply.reply ? cleanForDisplay(parsedReply.reply) : parsedReply.reply;
+    // ── TTS용: 발음 최적화 후처리 ──
     const ttsReply = parsedReply.reply ? applyTtsPostProcessing(parsedReply.reply) : parsedReply.reply;
 
     return new Response(JSON.stringify({
-      reply: parsedReply.reply,
+      reply: displayReply,
       ttsReply,
       action: parsedReply.action || "none",
       tabId: parsedReply.tabId || null,

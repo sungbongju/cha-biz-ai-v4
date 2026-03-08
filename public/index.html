@@ -1839,10 +1839,18 @@ async function startSession() {
       task_type: 'repeat'
     });
 
-    // 발화 완료는 ActiveSpeakersChanged 이벤트가 처리
     // 인사말 완료 후 음성인식 시작을 위해 플래그 설정
     autoListenEnabled = true;
     initSpeechRecognition();
+
+    // 인사말 폴백 타이머 (ActiveSpeakersChanged 이벤트가 안 올 경우 대비)
+    var greetFallbackMs = Math.max(5000, (greetingTTS.length / 4) * 1000 + 3000);
+    setTimeout(function() {
+      if (isSpeaking) {
+        console.warn('[Avatar] 인사말 폴백 타이머로 상태 해제 (' + Math.round(greetFallbackMs/1000) + '초)');
+        onSpeakingDone('greeting-fallback');
+      }
+    }, greetFallbackMs);
 
   } catch (err) {
     console.error('[Avatar]', err);
