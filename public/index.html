@@ -1588,7 +1588,10 @@ function initSpeechRecognition() {
 
   recognition.onstart = function() {
     isListening = true;
-    setVoiceState('listening');
+    // 발화 중이면 speaking 상태 유지 (음성인식은 백그라운드로 대기)
+    if (!isSpeaking) {
+      setVoiceState('listening');
+    }
     taskInput.placeholder = '음성 인식 중...';
   };
 
@@ -1649,9 +1652,11 @@ function onSpeakingDone(source) {
   isProcessing = false;
   console.log('[Avatar] 발화 완료 감지 (' + source + ')');
   if (autoListenEnabled && sessionInfo) {
+    setVoiceState('listening');
     startListening();
   } else {
     setVoiceState('idle');
+    taskInput.placeholder = '텍스트로 질문하세요';
   }
 }
 
@@ -1674,6 +1679,7 @@ async function interruptAvatar() {
 function stopListening() {
   clearTimeout(silenceTimer);
   isListening = false;
+  taskInput.placeholder = '질문을 입력하세요';
   if (recognition) { try { recognition.stop(); } catch (e) {} }
 }
 
