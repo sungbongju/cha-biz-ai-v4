@@ -1594,8 +1594,8 @@ function initSpeechRecognition() {
 
   recognition.onstart = function() {
     isListening = true;
-    // 발화 중이면 speaking 상태 유지 (음성인식은 백그라운드로 대기)
-    if (!isSpeaking) {
+    // 발화 중이거나 처리 중이면 상태 표시 변경하지 않음
+    if (!isSpeaking && !isProcessing) {
       setVoiceState('listening');
     }
     taskInput.placeholder = '음성 인식 중...';
@@ -1630,7 +1630,7 @@ function initSpeechRecognition() {
     if (event.error === 'not-allowed') {
       autoListenEnabled = false;
     } else if (event.error === 'no-speech') {
-      if (autoListenEnabled && sessionInfo) {
+      if (autoListenEnabled && sessionInfo && !isSpeaking && !isProcessing) {
         setTimeout(startListening, 500);
       }
     }
@@ -1639,7 +1639,8 @@ function initSpeechRecognition() {
 
   recognition.onend = function() {
     isListening = false;
-    if (autoListenEnabled && sessionInfo) {
+    // 발화 중이거나 처리 중이면 자동 재시작하지 않음
+    if (autoListenEnabled && sessionInfo && !isSpeaking && !isProcessing) {
       setTimeout(startListening, 600);
     }
   };
