@@ -1784,6 +1784,28 @@ async function startSession() {
       }
     });
 
+    // 세션 끊김 감지 → 자동 정리 + 시작 버튼 활성화
+    room.on(lk.RoomEvent.Disconnected, function(reason) {
+      console.warn('[Avatar] 세션 끊김:', reason);
+      mediaEl.srcObject = null;
+      placeholder.style.display = 'flex';
+      sessionInfo = null;
+      sessionToken = null;
+      isProcessing = false;
+      isSpeaking = false;
+      autoListenEnabled = false;
+      stopListening();
+      recognition = null;
+      room = null;
+      startBtnEl.disabled = false;
+      startBtnEl.textContent = '시작';
+      closeBtnEl.disabled = true;
+      taskInput.disabled = true;
+      sendBtnEl.disabled = true;
+      setVoiceState('idle');
+      addChatBubble('세션이 종료되었습니다. 시작 버튼을 눌러 다시 연결하세요.', 'ai');
+    });
+
     await room.connect(sessionInfo.url, sessionInfo.access_token);
 
     await callProxy('/v1/streaming.start', {
