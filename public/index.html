@@ -1662,15 +1662,15 @@ function onSpeakingDone(source) {
 
 // 아바타 발화 중단 (말 끊기)
 async function interruptAvatar() {
-  if (!isSpeaking || !sessionInfo) return;
+  if (!sessionInfo) return;
   console.log('[Avatar] 발화 중단 요청');
   try {
-    await callProxy('/v1/streaming.task', {
-      session_id: sessionInfo.session_id,
-      text: '',
-      task_type: 'repeat'
+    await callProxy('/v1/streaming.interrupt', {
+      session_id: sessionInfo.session_id
     });
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[Avatar] interrupt 실패:', e);
+  }
   isSpeaking = false;
   isProcessing = false;
   setVoiceState('idle');
