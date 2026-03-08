@@ -301,7 +301,7 @@ body:not(.loaded) #hero::after{opacity:1}
 #heygen-pip-container.expanded .pip-chat{max-height:350px}
 .pip-chat-inner{padding:10px 12px}
 .pip-chat-history{max-height:120px;overflow-y:auto;margin-bottom:8px;scrollbar-width:thin;scrollbar-color:var(--gold) transparent}
-.chat-bubble{padding:6px 10px;border-radius:10px;font-size:.78rem;margin-bottom:4px;max-width:90%;line-height:1.5;word-break:break-word}
+.chat-bubble{padding:6px 10px;border-radius:10px;font-size:.78rem;margin-bottom:4px;max-width:90%;width:fit-content;line-height:1.5;word-break:break-word}
 .chat-bubble.user{background:rgba(201,162,126,.15);color:var(--gold);margin-left:auto;text-align:right;border-bottom-right-radius:2px}
 .chat-bubble.ai{background:rgba(255,255,255,.08);color:var(--text-white);border-bottom-left-radius:2px}
 .pip-input-row{display:flex;gap:6px}
@@ -1621,7 +1621,7 @@ function initSpeechRecognition() {
     if (event.error === 'not-allowed') {
       autoListenEnabled = false;
     } else if (event.error === 'no-speech') {
-      if (autoListenEnabled && sessionInfo && !isProcessing && !isSpeaking) {
+      if (autoListenEnabled && sessionInfo) {
         setTimeout(startListening, 500);
       }
     }
@@ -1630,7 +1630,7 @@ function initSpeechRecognition() {
 
   recognition.onend = function() {
     isListening = false;
-    if (autoListenEnabled && sessionInfo && !isProcessing && !isSpeaking) {
+    if (autoListenEnabled && sessionInfo && !isProcessing) {
       setTimeout(startListening, 600);
     }
   };
@@ -1638,8 +1638,37 @@ function initSpeechRecognition() {
 }
 
 function startListening() {
-  if (!recognition || isListening || isProcessing || isSpeaking || !sessionInfo) return;
+  if (!recognition || isListening || !sessionInfo) return;
   try { recognition.start(); } catch (e) {}
+}
+
+// 발화 완료 공통 처리
+function onSpeakingDone(source) {
+  if (!isSpeaking) return;
+  isSpeaking = false;
+  isProcessing = false;
+  console.log('[Avatar] 발화 완료 감지 (' + source + ')');
+  if (autoListenEnabled && sessionInfo) {
+    startListening();
+  } else {
+    setVoiceState('idle');
+  }
+}
+
+// 아바타 발화 중단 (말 끊기)
+async function interruptAvatar() {
+  if (!isSpeaking || !sessionInfo) return;
+  console.log('[Avatar] 발화 중단 요청');
+  try {
+    await callProxy('/v1/streaming.task', {
+      session_id: sessionInfo.session_id,
+      text: '',
+      task_type: 'repeat'
+    });
+  } catch (e) {}
+  isSpeaking = false;
+  isProcessing = false;
+  setVoiceState('idle');
 }
 
 function stopListening() {
@@ -1650,8 +1679,15 @@ function stopListening() {
 
 /* ── 대화 처리 파이프라인 ── */
 async function processUserInput(text) {
-  if (!text || !sessionInfo || isProcessing) return;
+  if (!text || !sessionInfo) return;
+
+  // 발화 중이면 끊고 새 질문 처리
+  if (isSpeaking || isProcessing) {
+    await interruptAvatar();
+  }
+
   isProcessing = true;
+  stopListening();
 
   addChatBubble(text, 'user');
   setVoiceState('thinking');
@@ -1679,23 +1715,21 @@ async function processUserInput(text) {
     task_type: 'repeat'
   });
 
-  var speakDuration = Math.max(3000, (ttsText.length / 5) * 1000 + 1500);
+  // 발화 완료는 이벤트가 처리 (ActiveSpeakers / AudioMuted)
+  // 안전장치: 글자 수 기반 + 여유시간으로 폴백
+  var fallbackMs = Math.max(5000, (ttsText.length / 4) * 1000 + 3000);
   setTimeout(function() {
-    isSpeaking = false;
-    isProcessing = false;
-    if (autoListenEnabled && sessionInfo) {
-      startListening();
-    } else {
-      setVoiceState('idle');
+    if (isProcessing) {
+      console.warn('[Avatar] 폴백 타이머로 상태 해제 (' + Math.round(fallbackMs/1000) + '초)');
+      onSpeakingDone('fallback');
     }
-  }, speakDuration);
+  }, fallbackMs);
 }
 
 async function sendMessage() {
   var text = taskInput.value.trim();
   if (!text || !sessionInfo) return;
   taskInput.value = '';
-  stopListening();
   processUserInput(text);
 }
 
@@ -1723,10 +1757,24 @@ async function startSession() {
     var lk = window.LivekitClient;
     room = new lk.Room({ adaptiveStream: true, dynacast: true });
 
+    var _speakingTimeout = null;
+
     room.on(lk.RoomEvent.TrackSubscribed, function(track) {
       if (track.kind === 'video' || track.kind === 'audio') {
         track.attach(mediaEl);
         placeholder.style.display = 'none';
+      }
+    });
+
+    // 아바타 발화 완료 감지
+    room.on(lk.RoomEvent.ActiveSpeakersChanged, function(speakers) {
+      var avatarSpeaking = speakers.length > 0;
+      if (avatarSpeaking) {
+        if (_speakingTimeout) { clearTimeout(_speakingTimeout); _speakingTimeout = null; }
+      } else if (isSpeaking) {
+        _speakingTimeout = setTimeout(function() {
+          onSpeakingDone('ActiveSpeakers');
+        }, 800);
       }
     });
 
@@ -1757,19 +1805,10 @@ async function startSession() {
       task_type: 'repeat'
     });
 
-    var greetDuration = Math.max(3000, (greetingTTS.length / 5) * 1000 + 1500);
-    setTimeout(function() {
-      isSpeaking = false;
-      isProcessing = false;
-      autoListenEnabled = true;
-      var ok = initSpeechRecognition();
-      if (ok) {
-        startListening();
-      } else {
-        setVoiceState('idle');
-        taskInput.focus();
-      }
-    }, greetDuration);
+    // 발화 완료는 ActiveSpeakersChanged 이벤트가 처리
+    // 인사말 완료 후 음성인식 시작을 위해 플래그 설정
+    autoListenEnabled = true;
+    initSpeechRecognition();
 
   } catch (err) {
     console.error('[Avatar]', err);
