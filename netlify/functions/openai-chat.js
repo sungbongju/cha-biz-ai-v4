@@ -231,8 +231,40 @@ function applyTtsPostProcessing(text) {
     // 병원/기관
     .replace(/차병원그룹/g, '차 병원 그룹')
     .replace(/차병원/g, '차 병원')
+    // 교수/직책 관련
+    .replace(/입학홍보처장/g, '입학 홍보 처장')
+    .replace(/입학홍보처/g, '입학 홍보처')
+    .replace(/연구정책실장/g, '연구 정책 실장')
+    .replace(/글로벌미래교육원/g, '글로벌 미래 교육원')
+    .replace(/융합과학대학/g, '융합 과학 대학')
+    .replace(/데이터경영학과/g, '데이터 경영 학과')
+    .replace(/경영대학원/g, '경영 대학원')
+    .replace(/주임교수/g, '주임 교수')
+    .replace(/신용리스크/g, '신용 리스크')
+    .replace(/경영평가단/g, '경영 평가단')
+    .replace(/정책평가위원회/g, '정책 평가 위원회')
+    .replace(/경영컨설턴트/g, '경영 컨설턴트')
+    .replace(/편집위원장/g, '편집 위원장')
+    // 연구소/사업단
+    .replace(/빅데이터-인공지능연구소/g, '빅데이터 인공지능 연구소')
+    .replace(/빅데이터인공지능연구소/g, '빅데이터 인공지능 연구소')
+    .replace(/과학기술협력센터/g, '과학 기술 협력 센터')
+    .replace(/혁신관리/g, '혁신 관리')
+    .replace(/미래예측/g, '미래 예측')
+    .replace(/디지털혁신국/g, '디지털 혁신국')
     // 과목/분야명
     .replace(/기술경영/g, '기술 경영')
+    .replace(/기술경제/g, '기술 경제')
+    .replace(/국제경영/g, '국제 경영')
+    .replace(/국제경제/g, '국제 경제')
+    .replace(/연구윤리/g, '연구 윤리')
+    .replace(/인사조직/g, '인사 조직')
+    .replace(/경영전략/g, '경영 전략')
+    .replace(/관광심리/g, '관광 심리')
+    .replace(/의료관광/g, '의료 관광')
+    .replace(/소비자심리/g, '소비자 심리')
+    .replace(/재무금융/g, '재무 금융')
+    .replace(/회계재무/g, '회계 재무')
     .replace(/조직행동론/g, '조직 행동론')
     .replace(/경영학원론/g, '경영학 원론')
     .replace(/재무관리/g, '재무 관리')
@@ -240,12 +272,12 @@ function applyTtsPostProcessing(text) {
     .replace(/경영전략론/g, '경영 전략론')
     .replace(/서비스마케팅/g, '서비스 마케팅')
     .replace(/금융시장론/g, '금융 시장론')
-    .replace(/소비자심리/g, '소비자 심리')
     .replace(/기업지배구조/g, '기업 지배 구조')
     .replace(/투자자산운용/g, '투자 자산 운용')
     .replace(/캡스톤디자인/g, '캡스톤 디자인')
     .replace(/비즈니스애널리틱스/g, '비즈니스 애널리틱스')
     .replace(/헬스케어비즈니스/g, '헬스케어 비즈니스')
+    .replace(/헬스케어파이낸스/g, '헬스케어 파이낸스')
     // 영어 약어 → 한글 발음
     .replace(/\bESG\b/g, '이에스지')
     .replace(/\bAI\b/g, '에이아이')
@@ -257,6 +289,12 @@ function applyTtsPostProcessing(text) {
     .replace(/\bCRM\b/g, '씨알엠')
     .replace(/\bCDO\b/g, '씨디오')
     .replace(/\bVC\b/g, '브이씨')
+    .replace(/\bCPA\b/g, '씨피에이')
+    .replace(/\bKPMG\b/g, '케이피엠지')
+    .replace(/\bKIST\b/g, '키스트')
+    .replace(/\bKT\b/g, '케이티')
+    .replace(/\bNYU\b/g, '엔와이유')
+    .replace(/\bUNDP\b/g, '유엔디피')
     .replace(/\bADsP\b/g, '에이디에스피')
     .replace(/\bSQLD\b/g, '에스큐엘디')
     .replace(/\bRISE\b/g, '라이즈')
@@ -271,6 +309,9 @@ function applyTtsPostProcessing(text) {
     '벤처캐피탈', '인큐베이팅', '부트캠프', '경진대회', '팀프로젝트',
     '차의과학대', '스포츠의학', '데이터학', '커뮤니케이션',
     '해커톤', '세미나', '데모데이', '리더십', '인사조직',
+    '재무금융', '기술경제', '국제경영', '국제경제', '연구윤리',
+    '관광심리', '기술경영', '혁신관리', '미래예측', '의료관광',
+    '컨설턴트', '연구소장', '편집위원장',
   ];
   const particles = '은|는|이|가|을|를|의|에|에서|으로|로|만|만의|과|와|도|까지|부터|에게|한테|처럼|보다|라는|이라는|에는|으로는|만으로|에서는';
   const compoundRegex = new RegExp(`(${compoundWords.join('|')})(${particles})`, 'g');
