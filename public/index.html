@@ -1578,7 +1578,7 @@ var _tabToSection = {
 function navigateToSection(tabId) {
   var tid = _tabToSection[tabId] || tabId;
   var el = document.getElementById(tid);
-  if (el) el.scrollIntoView({behavior:'smooth'});
+  if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
 /* ── 음성인식 ── */
