@@ -1778,10 +1778,10 @@ async function startSession() {
         if (_speakingTimeout) clearTimeout(_speakingTimeout);
         _speakingTimeout = setTimeout(function() {
           if (isSpeaking) {
-            console.log('[Avatar] ActiveSpeakers 1.5초간 미수신 → 발화 종료');
+            console.log('[Avatar] ActiveSpeakers 1초간 미수신 → 발화 종료');
             onSpeakingDone('ActiveSpeakers-silence');
           }
-        }, 1500);
+        }, 1000);
       }
     });
 
