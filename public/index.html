@@ -1718,9 +1718,9 @@ async function processUserInput(text) {
     task_type: 'repeat'
   });
 
-  // 발화 완료는 이벤트가 처리 (ActiveSpeakers / AudioMuted)
-  // 안전장치: 글자 수 기반 + 여유시간으로 폴백
-  var fallbackMs = Math.max(5000, (ttsText.length / 4) * 1000 + 3000);
+  // 발화 완료 타이머 (ActiveSpeakersChanged speakers=0 이벤트가 오지 않으므로 타이머가 주요 감지)
+  // 한국어 TTS ≈ 초당 7글자 + 1.5초 여유
+  var fallbackMs = Math.max(3000, (ttsText.length / 7) * 1000 + 1500);
   setTimeout(function() {
     if (isSpeaking || isProcessing) {
       console.warn('[Avatar] 폴백 타이머로 상태 해제 (' + Math.round(fallbackMs/1000) + '초)');
@@ -1847,8 +1847,8 @@ async function startSession() {
     autoListenEnabled = true;
     initSpeechRecognition();
 
-    // 인사말 폴백 타이머 (ActiveSpeakersChanged 이벤트가 안 올 경우 대비)
-    var greetFallbackMs = Math.max(5000, (greetingTTS.length / 4) * 1000 + 3000);
+    // 인사말 발화 완료 타이머 (한국어 TTS ≈ 초당 7글자 + 1.5초 여유)
+    var greetFallbackMs = Math.max(3000, (greetingTTS.length / 7) * 1000 + 1500);
     setTimeout(function() {
       if (isSpeaking) {
         console.warn('[Avatar] 인사말 폴백 타이머로 상태 해제 (' + Math.round(greetFallbackMs/1000) + '초)');
