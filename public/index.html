@@ -1609,7 +1609,8 @@ function initSpeechRecognition() {
       console.error('[Voice] 마이크 권한 거부됨');
       autoListenEnabled = false;
     } else if (event.error === 'no-speech') {
-      if (autoListenEnabled && sessionInfo && !isSpeaking && !isProcessing) {
+      // no-speech는 정상 — 음성인식 계속 재시작 (발화 중에도 인터럽트 감지용)
+      if (autoListenEnabled && sessionInfo) {
         setTimeout(startListening, 500);
       }
     }
@@ -1618,8 +1619,8 @@ function initSpeechRecognition() {
 
   recognition.onend = function() {
     isListening = false;
-    // 발화 중이거나 처리 중이면 자동 재시작하지 않음
-    if (autoListenEnabled && sessionInfo && !isSpeaking && !isProcessing) {
+    // 항상 재시작 (발화 중에도 음성인식 유지 → 인터럽트 감지)
+    if (autoListenEnabled && sessionInfo) {
       setTimeout(startListening, 600);
     }
   };
@@ -1628,12 +1629,8 @@ function initSpeechRecognition() {
 
 function startListening() {
   if (!recognition || !sessionInfo) return;
-  console.log('[Voice] startListening 호출 (isListening=' + isListening + ', isSpeaking=' + isSpeaking + ', isProcessing=' + isProcessing + ')');
-  if (isListening) {
-    // 이미 listening 중이면 상태만 갱신
-    setVoiceState('listening');
-    return;
-  }
+  console.log('[Voice] startListening (isListening=' + isListening + ', isSpeaking=' + isSpeaking + ', isProcessing=' + isProcessing + ')');
+  if (isListening) return;
   try { recognition.start(); } catch (e) { console.warn('[Voice] recognition.start 실패:', e.message); }
 }
 
