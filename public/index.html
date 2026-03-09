@@ -1765,8 +1765,9 @@ async function startSession() {
       }
     });
 
-    // 아바타 발화 완료 감지
+    // 아바타 발화 완료 감지 (다중 이벤트)
     room.on(lk.RoomEvent.ActiveSpeakersChanged, function(speakers) {
+      console.log('[LiveKit] ActiveSpeakersChanged: speakers=' + speakers.length + ', isSpeaking=' + isSpeaking);
       var avatarSpeaking = speakers.length > 0;
       if (avatarSpeaking) {
         if (_speakingTimeout) { clearTimeout(_speakingTimeout); _speakingTimeout = null; }
@@ -1774,6 +1775,16 @@ async function startSession() {
         _speakingTimeout = setTimeout(function() {
           onSpeakingDone('ActiveSpeakers');
         }, 800);
+      }
+    });
+
+    // TrackMuted 이벤트 — 아바타 오디오 트랙 뮤트 시 발화 종료로 간주
+    room.on(lk.RoomEvent.TrackMuted, function(publication, participant) {
+      console.log('[LiveKit] TrackMuted: kind=' + (publication.kind||'?') + ', isSpeaking=' + isSpeaking);
+      if (publication.kind === 'audio' && isSpeaking) {
+        setTimeout(function() {
+          if (isSpeaking) onSpeakingDone('TrackMuted');
+        }, 500);
       }
     });
 
