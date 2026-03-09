@@ -1466,6 +1466,7 @@ let isProcessing = false;
 let isSpeaking = false;
 let autoListenEnabled = true;
 let silenceTimer = null;
+let _speakStartedAt = 0;
 
 const mediaEl       = document.getElementById('avatarVideo');
 const startBtnEl    = document.getElementById('startBtn');
@@ -1637,9 +1638,15 @@ function startListening() {
 // 발화 완료 공통 처리
 function onSpeakingDone(source) {
   if (!isSpeaking) { console.log('[Avatar] onSpeakingDone 무시 — isSpeaking=false (' + source + ')'); return; }
+  // 발화 시작 후 2초 이내면 무시 (premature 이벤트 방지)
+  var elapsed = Date.now() - _speakStartedAt;
+  if (source !== 'fallback' && source !== 'greeting-fallback' && elapsed < 2000) {
+    console.log('[Avatar] onSpeakingDone 무시 — 너무 빠름 (' + elapsed + 'ms, ' + source + ')');
+    return;
+  }
   isSpeaking = false;
   isProcessing = false;
-  console.log('[Avatar] 발화 완료 감지 (' + source + ') → autoListen=' + autoListenEnabled + ', session=' + !!sessionInfo);
+  console.log('[Avatar] 발화 완료 감지 (' + source + ', ' + elapsed + 'ms) → autoListen=' + autoListenEnabled + ', session=' + !!sessionInfo);
   if (autoListenEnabled && sessionInfo) {
     setVoiceState('listening');
     startListening();
@@ -1701,6 +1708,7 @@ async function processUserInput(text) {
 
   // 아바타 TTS 발화
   isSpeaking = true;
+  _speakStartedAt = Date.now();
   setVoiceState('speaking');
 
   var ttsText = result.ttsReply || result.reply;
@@ -1826,6 +1834,7 @@ async function startSession() {
     var greetingTTS = '안녕하세요! 차 의과학 대학교, 경영학 전공 상담을 도와드릴게요. 궁금하신 점을 편하게 말씀해 주세요.';
     addChatBubble(greetingDisplay, 'ai');
     isSpeaking = true;
+    _speakStartedAt = Date.now();
     setVoiceState('speaking');
 
     await callProxy('/v1/streaming.task', {
