@@ -1683,10 +1683,8 @@ function stopListening() {
 async function processUserInput(text) {
   if (!text || !sessionInfo) return;
 
-  // 발화 중이면 끊고 새 질문 처리
-  if (isSpeaking || isProcessing) {
-    await interruptAvatar();
-  }
+  // 이전 발화 항상 끊기 (타이밍 이슈로 isSpeaking이 이미 false일 수 있음)
+  await interruptAvatar();
 
   isProcessing = true;
   stopListening();
@@ -1781,7 +1779,7 @@ async function startSession() {
             console.log('[Avatar] ActiveSpeakers 1초간 미수신 → 발화 종료');
             onSpeakingDone('ActiveSpeakers-silence');
           }
-        }, 300);
+        }, 800);
       }
     });
 
